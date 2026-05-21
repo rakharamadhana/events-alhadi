@@ -1,0 +1,142 @@
+// =============================================================================
+// Prisma Schema — Events Al-Hadi Ticketing Platform
+// =============================================================================
+// Database: PostgreSQL (cPanel-deployed)
+// Features: User approval workflow, optimistic-locking seats, 8-hour lock TTL
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SeatStatus {
+  AVAILABLE
+  LOCKED
+  SOLD
+  HELD    // Admin-only: reserved for VIP, not available for user purchase
+}
+
+enum ReservationStatus {
+  PENDING_PAYMENT
+  SUCCESS
+  EXPIRED
+  CANCELLED
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  status        UserStatus @default(PENDING)
+  role          UserRole   @default(USER)
+
+  reservations  Reservation[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  venue       String
+  date        DateTime
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  currency    String   @default("$")
+
+  seats       Seat[]
+  reservations Reservation[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([isActive])
+  @@map("events")
+}
+
+model Seat {
+  id          String     @id @default(cuid())
+  eventId     String
+  label       String                           // e.g. "A1", "B12", "VIP-3"
+  row         String                           // e.g. "A", "B", "VIP"
+  number      Int                              // seat number within the row
+  price       Decimal    @db.Decimal(10, 2)
+  status      SeatStatus @default(AVAILABLE)
+  lockedUntil DateTime?                        // NULL when AVAILABLE or SOLD
+  lockedBy    String?                          // userId who locked the seat
+
+  // Optimistic locking: every write increments the version.
+  // UPDATE ... WHERE id = ? AND version = ? prevents lost-update races.
+  version     Int        @default(0)
+
+  event       Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
+  reservationId String?
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([eventId, label])
+  @@index([eventId, status])
+  @@index([status, lockedUntil])
+  @@map("seats")
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  userId      String
+  eventId     String
+  status      ReservationStatus @default(PENDING_PAYMENT)
+  totalAmount Decimal           @db.Decimal(10, 2)
+  seatCount   Int
+  expiresAt   DateTime                          // mirrors lockedUntil for display
+
+  // Manual bank transfer reference (displayed to user after reservation)
+  bankRef     String?                            // unique ref code generated for tracing
+  paymentProofUrl String?                        // public URL path to uploaded payment receipt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  seats       Seat[]
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("reservations")
+}
