@@ -15,15 +15,26 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient() {
+  return new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
         : ["error"],
   });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+}
+
+/** Call after `prisma generate` so the dev server loads the new client (restart `npm run dev`). */
+export function resetPrismaClient() {
+  if (globalForPrisma.prisma) {
+    void globalForPrisma.prisma.$disconnect();
+  }
+  globalForPrisma.prisma = createPrismaClient();
+  return globalForPrisma.prisma;
 }

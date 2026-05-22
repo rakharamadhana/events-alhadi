@@ -17,13 +17,13 @@ async function main() {
   // -------------------------------------------------------------------------
   // 1. Create Admin User
   // -------------------------------------------------------------------------
-  const adminPassword = await hash("admin1234", 12);
+  const adminPassword = await hash("123456", 12);
   const admin = await prisma.user.upsert({
-    where: { email: "admin@eventsalhadi.com" },
+    where: { email: "admin@example.com" },
     update: {},
     create: {
       name: "Admin",
-      email: "admin@eventsalhadi.com",
+      email: "admin@example.com",
       passwordHash: adminPassword,
       status: "APPROVED",
       role: "ADMIN",
@@ -34,7 +34,7 @@ async function main() {
   // -------------------------------------------------------------------------
   // 2. Create a Sample Approved User
   // -------------------------------------------------------------------------
-  const userPassword = await hash("user1234", 12);
+  const userPassword = await hash("123456", 12);
   const user = await prisma.user.upsert({
     where: { email: "user@example.com" },
     update: {},
@@ -53,15 +53,24 @@ async function main() {
   // -------------------------------------------------------------------------
   const event = await prisma.event.upsert({
     where: { id: "sample-event-001" },
-    update: {},
+    update: {
+      titleZhTw: "Al-Hadi 2026 慈善晚宴",
+      descriptionZhTw:
+        "誠邀您參加一場凝聚社群、共享喜悅與善行的夜晚。這場年度活動將邀請家庭與支持者一同參與晚宴、節目與募款，支持 Al-Hadi 的教育與社群服務。",
+      venueZhTw: "城市會議中心大宴會廳",
+    },
     create: {
       id: "sample-event-001",
       title: "Al-Hadi Grand Charity Gala 2026",
+      titleZhTw: "Al-Hadi 2026 慈善晚宴",
       description:
         "Join us for an evening of community, celebration, and generosity. " +
         "This flagship event brings together families and supporters for an " +
         "unforgettable night of entertainment, fine dining, and fundraising.",
+      descriptionZhTw:
+        "誠邀您參加一場凝聚社群、共享喜悅與善行的夜晚。這場年度活動將邀請家庭與支持者一同參與晚宴、節目與募款，支持 Al-Hadi 的教育與社群服務。",
       venue: "Grand Ballroom, City Convention Center",
+      venueZhTw: "城市會議中心大宴會廳",
       date: new Date("2026-07-15T19:00:00Z"),
       isActive: true,
       currency: "NTD",
@@ -84,7 +93,9 @@ async function main() {
 10: [10-28,300] [10-26,300] [10-24,300] [10-22,300] [10-20,300] [10-18,300] [10-16,300] [10-14,300] [10-12,300] [10-10,300] [10-8,300] [10-6,300] _ _ _ _ _ [10-4,400] [10-2,400] _ _ _ _ [10-1,400] [10-3,400] _ _ _ _ _ [10-5,300] [10-7,300] [10-9,300] [10-11,300] [10-13,300] [10-15,300] [10-17,300] [10-19,300] [10-21,300] [10-23,300] [10-25,300] [10-27,300]
 11: _ _ [11-20,300] [11-18,300] [11-16,300] [11-14,300] [11-12,300] [11-10,300] [11-8,300] [11-6,300] [11-4,300] [11-2,300] _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ [11-1,300] [11-3,300] [11-5,300] [11-7,300] [11-9,300] [11-11,300] [11-13,300] [11-15,300] [11-17,300] [11-19,300] _ _`;
 
-  const lines = THEATER_BLUEPRINT.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+  const lines = THEATER_BLUEPRINT.split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
   const seatsToCreate: Array<{
     eventId: string;
     label: string;
@@ -98,7 +109,7 @@ async function main() {
     let rowLabel = "";
     let tokensString = line;
     const colonIndex = line.indexOf(":");
-    
+
     if (colonIndex !== -1) {
       rowLabel = line.substring(0, colonIndex).trim();
       tokensString = line.substring(colonIndex + 1).trim();
@@ -155,8 +166,8 @@ async function main() {
   console.log(`✅ ${seatCount} seats generated for event "${event.title}"`);
 
   console.log("\n🎉 Seed complete!");
-  console.log("   Admin login: admin@eventsalhadi.com / admin1234");
-  console.log("   User login:  user@example.com / user1234");
+  console.log("   Admin login: admin@example.com / 123456");
+  console.log("   User login:  user@example.com / 123456");
 }
 
 main()

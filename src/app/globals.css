@@ -1,8 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --tie-950: #022c22;
+  --tie-900: #064e3b;
+  --tie-800: #065f46;
+  --tie-700: #047857;
+  --tie-600: #059669;
+  --tie-500: #10b981;
+  --tie-400: #34d399;
+  --tie-100: #d1fae5;
+  --cream-50: #fbfaf4;
+  --cream-100: #f4f1e6;
+  --cream-200: #e8dfc7;
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --page: #06090f;
+  --surface: #111726;
+  --surface-muted: #1e293b;
+  --surface-strong: #030712;
+  --border: rgba(148, 163, 184, 0.12);
+  --border-strong: rgba(148, 163, 184, 0.2);
+  --muted: #94a3b8;
+  --muted-strong: #cbd5e1;
+  --accent: #10b981;
+  --accent-strong: #34d399;
+  --accent-contrast: #090d16;
 }
 
 @theme inline {
@@ -12,17 +34,430 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme="light"] {
+  --background: #fbfaf4;
+  --foreground: #083f36;
+  --page: #f4f1e6;
+  --surface: #ffffff;
+  --surface-muted: #eef8f2;
+  --surface-strong: #e2f2ea;
+  --border: rgba(6, 79, 67, 0.14);
+  --border-strong: rgba(6, 79, 67, 0.24);
+  --muted: #5f7f73;
+  --muted-strong: #143f36;
+  --accent: #075747;
+  --accent-strong: #0a6a55;
+  --accent-contrast: #fbfaf4;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: rgba(36, 185, 133, 0.32);
+}
+
+/* Theme bridge for the existing Tailwind-heavy UI. */
+.bg-gray-950,
+.bg-gray-900 {
+  background-color: var(--page) !important;
+}
+.bg-gray-800,
+.bg-gray-850,
+.bg-gray-750 {
+  background-color: var(--surface) !important;
+}
+.bg-gray-700,
+.bg-gray-650,
+.bg-gray-600 {
+  background-color: var(--surface-muted) !important;
+}
+.bg-gray-950\/95,
+.bg-gray-950\/80,
+.bg-gray-950\/50,
+.bg-gray-900\/95,
+.bg-gray-900\/90,
+.bg-gray-900\/80,
+.bg-gray-900\/60,
+.bg-gray-900\/50,
+.bg-gray-900\/40,
+.bg-gray-900\/30,
+.bg-gray-800\/85,
+.bg-gray-800\/80,
+.bg-gray-800\/55,
+.bg-gray-800\/50,
+.bg-gray-750\/30,
+.bg-gray-700\/50,
+.bg-gray-700\/40,
+.bg-gray-700\/30 {
+  background-color: color-mix(
+    in srgb,
+    var(--surface) 82%,
+    transparent
+  ) !important;
+}
+.bg-gray-900\/70 {
+  background-color: color-mix(
+    in srgb,
+    var(--surface-strong) 75%,
+    transparent
+  ) !important;
+}
+.bg-gray-800\/40 {
+  background-color: color-mix(
+    in srgb,
+    var(--surface-muted) 45%,
+    transparent
+  ) !important;
+}
+.hover\:bg-gray-700\/60:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--surface-strong) 85%,
+    transparent
+  ) !important;
+}
+.hover\:bg-gray-700\/50:hover,
+.hover\:bg-gray-650:hover {
+  background-color: var(--surface-muted) !important;
+}
+.hover\:text-white:hover {
+  color: var(--foreground) !important;
+}
+.hover\:text-emerald-300:hover {
+  color: var(--accent) !important;
+}
+.focus\:ring-emerald-500:focus {
+  --tw-ring-color: var(--accent) !important;
+}
+.focus\:border-emerald-500:focus,
+.focus-visible\:border-emerald-500:focus-visible {
+  border-color: var(--accent) !important;
+}
+.text-white,
+.text-gray-100,
+.text-gray-200 {
+  color: var(--foreground) !important;
+}
+.text-gray-300 {
+  color: var(--muted-strong) !important;
+}
+.text-gray-400,
+.text-gray-500 {
+  color: var(--muted) !important;
+}
+.text-gray-900 {
+  color: var(--accent-contrast) !important;
+}
+.bg-red-500.text-white,
+.bg-red-600.text-white,
+.bg-red-700.text-white,
+.hover\:bg-red-500:hover.text-white,
+.hover\:bg-red-700:hover.text-white {
+  color: #ffffff !important;
+}
+.bg-emerald-500.text-white,
+.bg-emerald-600.text-white,
+.bg-emerald-700.text-white {
+  color: var(--accent-contrast) !important;
+}
+.text-emerald-500,
+.text-emerald-400,
+.text-emerald-300 {
+  color: var(--accent-strong) !important;
+}
+.bg-emerald-500,
+.bg-emerald-600,
+.hover\:bg-emerald-400:hover,
+.hover\:bg-emerald-500:hover,
+.hover\:bg-emerald-600:hover {
+  background-color: var(--accent) !important;
+}
+.bg-emerald-700,
+.bg-emerald-800 {
+  background-color: var(--tie-800) !important;
+}
+.bg-emerald-950\/80,
+.bg-emerald-950\/40,
+.bg-emerald-950\/30,
+.bg-emerald-950\/20,
+.bg-emerald-950\/10,
+.bg-emerald-900\/80,
+.bg-emerald-900\/30,
+.bg-emerald-500\/20,
+.bg-emerald-500\/10,
+.bg-emerald-500\/5,
+.hover\:bg-emerald-500\/20:hover,
+.hover\:bg-emerald-500\/10:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--accent) 15%,
+    transparent
+  ) !important;
+}
+.border-gray-850,
+.border-gray-800,
+.border-gray-750,
+.border-gray-700,
+.border-gray-700\/80,
+.border-gray-700\/50,
+.border-gray-650,
+.border-gray-600 {
+  border-color: var(--border) !important;
+}
+.border-emerald-500,
+.border-emerald-500\/50,
+.border-emerald-500\/40,
+.border-emerald-500\/30,
+.border-emerald-500\/25,
+.border-emerald-500\/20,
+.border-emerald-500\/10,
+.border-emerald-400 {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
+}
+.from-emerald-950\/40,
+.from-emerald-700,
+.from-emerald-600 {
+  --tw-gradient-from: var(--tie-900) var(--tw-gradient-from-position) !important;
+}
+.via-emerald-800\/20 {
+  --tw-gradient-via: color-mix(in srgb, var(--tie-700) 42%, transparent)
+    var(--tw-gradient-via-position) !important;
+}
+.to-emerald-950\/40,
+.to-teal-800,
+.to-teal-700 {
+  --tw-gradient-to: var(--tie-950) var(--tw-gradient-to-position) !important;
+}
+
+input,
+textarea,
+select {
+  color-scheme: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.theme-toggle {
+  color: var(--accent-strong) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--surface) 90%,
+    transparent
+  ) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.event-insight-panel {
+  background: color-mix(in srgb, var(--surface) 92%, var(--page));
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.admin-booking-filter-chip {
+  background: color-mix(in srgb, var(--surface) 92%, var(--page));
+  border-color: var(--border-strong);
+  color: var(--muted-strong);
+}
+
+.admin-booking-filter-chip:hover {
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border-strong));
+  color: var(--foreground);
+}
+
+.admin-booking-filter-chip.is-active {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
+  color: var(--accent);
+}
+
+.admin-booking-filter-count {
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  color: var(--foreground);
+}
+
+.admin-booking-filter-chip.is-active .admin-booking-filter-count {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+
+.payment-proof-notice {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
+}
+
+.payment-proof-notice-title {
+  color: var(--accent);
+}
+
+.payment-proof-notice-body {
+  color: var(--muted-strong);
+}
+
+:root[data-theme="light"] .payment-proof-notice {
+  background: color-mix(in srgb, var(--accent) 8%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+}
+
+:root[data-theme="light"] .payment-proof-notice-title {
+  color: #075747;
+}
+
+:root[data-theme="light"] .payment-proof-notice-body {
+  color: #315f53;
+}
+
+.transfer-amount-card {
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--border));
+}
+
+.transfer-amount-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.transfer-amount-small {
+  color: var(--foreground);
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+}
+
+.transfer-amount-total {
+  color: var(--accent);
+  font-size: 1.875rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-top: 0.25rem;
+}
+
+.transfer-copy-btn {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.transfer-copy-btn:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+:root[data-theme="light"] .transfer-copy-btn {
+  color: #075747;
+  border-color: color-mix(in srgb, #075747 35%, var(--border));
+}
+
+.transfer-amount-disclaimer {
+  color: var(--muted-strong);
+}
+
+:root[data-theme="light"] .transfer-amount-card {
+  background: color-mix(in srgb, var(--accent) 7%, #ffffff);
+}
+
+:root[data-theme="light"] .transfer-amount-total {
+  color: #075747;
+}
+
+:root[data-theme="light"] .transfer-amount-disclaimer {
+  color: #315f53;
+}
+
+.event-insight-card {
+  background: color-mix(in srgb, var(--surface) 88%, var(--page));
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.event-insight-card-accent {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.event-insight-label {
+  color: var(--muted);
+}
+
+.event-insight-value {
+  color: var(--foreground);
+}
+
+.event-insight-accent {
+  color: var(--accent-strong);
+}
+
+:root[data-theme="light"] .event-insight-accent {
+  color: var(--accent);
+}
+
+.checkout-total-card {
+  background: color-mix(in srgb, var(--surface) 94%, var(--page));
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.checkout-total-card .checkout-total-muted {
+  color: var(--muted);
+}
+
+.checkout-total-card .checkout-total-price {
+  color: var(--accent-strong);
+}
+
+:root[data-theme="light"] .checkout-total-card {
+  background: color-mix(in srgb, var(--surface) 98%, var(--page));
+  border-color: var(--border-strong);
+}
+
+:root[data-theme="light"] .checkout-total-card .checkout-total-price {
+  color: var(--accent);
+}
+
+.transfer-reference-card {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--foreground);
+}
+
+.transfer-reference-label {
+  color: color-mix(in srgb, var(--accent-strong) 72%, var(--foreground));
+}
+
+.transfer-reference-code {
+  color: var(--accent-strong);
+}
+
+.transfer-reference-tip {
+  color: color-mix(in srgb, var(--accent-strong) 82%, var(--foreground));
+}
+
+:root[data-theme="light"] .transfer-reference-card {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+:root[data-theme="light"] .transfer-reference-label,
+:root[data-theme="light"] .transfer-reference-code,
+:root[data-theme="light"] .transfer-reference-tip {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .theme-toggle {
+    top: auto;
+    right: 0.875rem;
+    bottom: 0.875rem;
+  }
 }
 
 /* Custom Premium Scrollbar Utility */
@@ -31,14 +466,67 @@ body {
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3);
+  background: color-mix(in srgb, var(--surface-strong) 40%, transparent);
   border-radius: 9999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(16, 185, 129, 0.35);
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
   border-radius: 9999px;
-  border: 1px solid rgba(16, 185, 129, 0.1);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(16, 185, 129, 0.6);
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
 }
+
+/* Hide the fixed global theme toggle when an inline one is loaded in the navigation */
+body:has(.nav-theme-toggle) .theme-toggle {
+  display: none !important;
+}
+
+/* Coupon Theme-Safe Styles */
+.coupon-highlight-box {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface)) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border)) !important;
+}
+
+.coupon-highlight-label {
+  color: var(--accent-strong) !important;
+}
+
+.coupon-discount-text {
+  color: var(--accent-strong) !important;
+}
+
+.coupon-apply-btn {
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent) !important;
+  color: var(--accent-strong) !important;
+}
+
+.coupon-apply-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 24%, transparent) !important;
+}
+
+:root[data-theme="light"] .coupon-highlight-box {
+  background: color-mix(in srgb, var(--accent) 6%, #ffffff) !important;
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border)) !important;
+}
+
+:root[data-theme="light"] .coupon-highlight-label {
+  color: var(--accent) !important;
+}
+
+:root[data-theme="light"] .coupon-discount-text {
+  color: var(--accent) !important;
+}
+
+:root[data-theme="light"] .coupon-apply-btn {
+  color: var(--accent) !important;
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+
+:root[data-theme="light"] .coupon-apply-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+}
+

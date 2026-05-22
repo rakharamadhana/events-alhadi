@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Registration Pending",
+};
 
 export default function PendingPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-500/10 mb-6">
           <CheckCircleIcon className="h-10 w-10 text-emerald-400" aria-hidden="true" />
         </div>

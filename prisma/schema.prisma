@@ -6,7 +6,7 @@
 // =============================================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "library"
 }
 
@@ -34,12 +34,14 @@ enum SeatStatus {
   AVAILABLE
   LOCKED
   SOLD
-  HELD    // Admin-only: reserved for VIP, not available for user purchase
+  HELD // Admin-only: reserved for VIP, not available for user purchase
 }
 
 enum ReservationStatus {
   PENDING_PAYMENT
   SUCCESS
+  REFUND_REQUESTED
+  REFUNDED
   EXPIRED
   CANCELLED
 }
@@ -49,17 +51,24 @@ enum ReservationStatus {
 // ---------------------------------------------------------------------------
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  passwordHash  String
-  status        UserStatus @default(PENDING)
-  role          UserRole   @default(USER)
+  id              String     @id @default(cuid())
+  name            String
+  email           String     @unique
+  passwordHash    String
+  status          UserStatus @default(PENDING)
+  role            UserRole   @default(USER)
+  profileImageUrl String?
+  phone           String?
+  city            String?
+  country         String?
+  gender          String?
+  birthYear       Int?
+  bio             String?    @db.Text
 
-  reservations  Reservation[]
+  reservations Reservation[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([status])
@@ -67,47 +76,82 @@ model User {
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @db.Text
-  venue       String
-  date        DateTime
-  imageUrl    String?
-  isActive    Boolean  @default(true)
-  currency    String   @default("$")
+  id              String   @id @default(cuid())
+  title           String
+  titleZhTw       String?
+  description     String   @db.Text
+  descriptionZhTw String?  @db.Text
+  venue           String
+  venueZhTw       String?
+  date            DateTime
+  imageUrl        String?
+  isActive        Boolean  @default(true)
+  currency        String   @default("$")
 
-  seats       Seat[]
+  // Bank Transfer Configuration
+  bankName            String  @default("Global Tech Bank")
+  bankNameZhTw        String? @default("環球科技銀行")
+  bankCode            String  @default("")
+  bankAccount         String  @default("1029-4837-9912")
+  bankAccountHolder   String  @default("Al-Hadi TIECC")
+
+  // Optional per-event coupon (e.g. 10OFFHADI = 10% off each seat)
+  couponCode            String?
+  couponDiscountPercent Int?
+
+  seats        Seat[]
   reservations Reservation[]
+  coupons      Coupon[]
+  sponsors     Sponsor[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([date])
   @@index([isActive])
   @@map("events")
 }
 
+model Coupon {
+  id              String   @id @default(cuid())
+  eventId         String
+  code            String
+  discountPercent Int
+  maxUses         Int      @default(1)
+  expiresAt       DateTime
+
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, code])
+  @@index([eventId])
+  @@map("coupons")
+}
+
 model Seat {
   id          String     @id @default(cuid())
   eventId     String
-  label       String                           // e.g. "A1", "B12", "VIP-3"
-  row         String                           // e.g. "A", "B", "VIP"
-  number      Int                              // seat number within the row
+  label       String // e.g. "A1", "B12", "VIP-3"
+  row         String // e.g. "A", "B", "VIP"
+  number      Int // seat number within the row
   price       Decimal    @db.Decimal(10, 2)
   status      SeatStatus @default(AVAILABLE)
-  lockedUntil DateTime?                        // NULL when AVAILABLE or SOLD
-  lockedBy    String?                          // userId who locked the seat
+  lockedUntil DateTime? // NULL when AVAILABLE or SOLD
+  lockedBy    String? // userId who locked the seat
 
   // Optimistic locking: every write increments the version.
   // UPDATE ... WHERE id = ? AND version = ? prevents lost-update races.
-  version     Int        @default(0)
+  version Int @default(0)
 
-  event       Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  reservation Reservation? @relation(fields: [reservationId], references: [id])
+  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
   reservationId String?
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([eventId, label])
   @@index([eventId, status])
@@ -122,21 +166,56 @@ model Reservation {
   status      ReservationStatus @default(PENDING_PAYMENT)
   totalAmount Decimal           @db.Decimal(10, 2)
   seatCount   Int
-  expiresAt   DateTime                          // mirrors lockedUntil for display
+  expiresAt   DateTime // mirrors lockedUntil for display
+
+  couponCode            String?
+  couponDiscountPercent Int?
+  couponId              String?
 
   // Manual bank transfer reference (displayed to user after reservation)
-  bankRef     String?                            // unique ref code generated for tracing
-  paymentProofUrl String?                        // public URL path to uploaded payment receipt
+  bankRef           String? // unique ref code generated for tracing
+  paymentProofUrl   String? // public URL path to uploaded payment receipt
+  refundReason      String?   @db.Text
+  refundRequestedAt DateTime?
+  refundReviewedAt  DateTime?
+  refundReviewNote  String?   @db.Text
+  refundProofUrl    String? // public URL path to uploaded refund receipt
 
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event       Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  seats       Seat[]
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  coupon Coupon? @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  seats  Seat[]
 
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
   @@index([expiresAt])
+  @@index([couponId])
   @@map("reservations")
 }
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
+}
+
+model Sponsor {
+  id        String      @id @default(cuid())
+  eventId   String
+  name      String
+  logoUrl   String      @db.Text
+  tier      SponsorTier
+
+  event     Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([eventId])
+  @@map("sponsors")
+}
+

@@ -13,7 +13,7 @@ const { createServer } = require("http");
 const { parse } = require("url");
 const next = require("next");
 
-// Passenger sets PORT; fall back to 3000 for local development.
+// Passenger sets PORT; fall back to the same port used by `npm run dev`.
 const port = parseInt(process.env.PORT || "3000", 10);
 const hostname = "0.0.0.0";
 const dev = process.env.NODE_ENV !== "production";

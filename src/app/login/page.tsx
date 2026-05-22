@@ -46,10 +46,18 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-700">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-emerald-400">
+          <div className="flex justify-start">
+            <Link
+              href="/"
+              className="inline-flex items-center text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider"
+            >
+              ← Back to App
+            </Link>
+          </div>
+          <h2 className="mt-4 text-center text-3xl font-extrabold text-emerald-400">
             Events Al-Hadi
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">

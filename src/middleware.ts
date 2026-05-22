@@ -3,7 +3,8 @@
 // =============================================================================
 // Protects routes using Auth.js v5 middleware integration.
 // - /admin/* routes require ADMIN role
-// - /events/*, /reservations/* require APPROVED user status
+// - /events/* is browseable publicly; buying remains protected by server actions
+// - /reservations/*, /profile require APPROVED user status
 // - /login, /register, /api/cron/* are public
 // =============================================================================
 
@@ -17,8 +18,17 @@ export default auth((req) => {
   // -------------------------------------------------------------------------
   // Public routes — always accessible
   // -------------------------------------------------------------------------
-  const publicPaths = ["/login", "/register", "/api/auth", "/api/cron"];
-  if (publicPaths.some((path) => pathname.startsWith(path))) {
+  const publicPaths = [
+    "/events",
+    "/login",
+    "/register",
+    "/api/auth",
+    "/api/cron",
+  ];
+  if (
+    pathname === "/" ||
+    publicPaths.some((path) => pathname.startsWith(path))
+  ) {
     return NextResponse.next();
   }
 
@@ -52,10 +62,7 @@ export default auth((req) => {
   // -------------------------------------------------------------------------
   // Protected user routes — require APPROVED status
   // -------------------------------------------------------------------------
-  if (
-    pathname.startsWith("/events") ||
-    pathname.startsWith("/reservations")
-  ) {
+  if (pathname.startsWith("/reservations") || pathname.startsWith("/profile")) {
     if (user.status !== "APPROVED") {
       return NextResponse.redirect(new URL("/pending", req.nextUrl.origin));
     }

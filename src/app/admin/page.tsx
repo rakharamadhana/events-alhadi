@@ -4,6 +4,15 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon, UserGroupIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import AdminClientActions from "./AdminClientActions";
+import AdminEventCreator from "./AdminEventCreator";
+import type { Metadata } from "next";
+import { formatBankRefForTransfer } from "@/lib/bankRef";
+import { formatSeatLabelsForDisplay } from "@/lib/seatLabel";
+import { getI18n } from "@/lib/i18n";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard",
+};
 
 export default async function AdminDashboard() {
   const session = await auth();
@@ -17,6 +26,12 @@ export default async function AdminDashboard() {
     orderBy: { createdAt: "asc" }
   });
 
+  const { t } = await getI18n();
+  const seatLabelFormat = {
+    rowSeat: t.common.seatRowSeatFormat,
+    wheelchairRowSeat: t.common.seatWheelchairRowSeatFormat,
+  };
+
   const pendingReservations = await prisma.reservation.findMany({
     where: { status: "PENDING_PAYMENT" },
     include: {
@@ -28,18 +43,21 @@ export default async function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans py-8 px-4 sm:px-6 lg:px-8 lg:py-12">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col gap-4 pr-12 sm:flex-row sm:items-center sm:justify-between sm:pr-0 mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Admin Dashboard</h1>
-            <p className="mt-2 text-sm text-gray-400">Manage user approvals and verify payments.</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Admin Dashboard</h1>
+            <p className="mt-2 text-sm text-gray-400">Manage user approvals, verify payments, and publish events.</p>
           </div>
-          <Link href="/" className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Back to App
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <AdminEventCreator />
+            <Link href="/" className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
+              <ArrowLeftIcon className="mr-2 h-4 w-4" />
+              Back to App
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -100,7 +118,7 @@ export default async function AdminDashboard() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-mono text-emerald-400 font-bold bg-emerald-900/30 px-2 py-0.5 rounded text-sm border border-emerald-500/30">
-                            {res.bankRef}
+                            {formatBankRefForTransfer(res.bankRef)}
                           </span>
                           {res.paymentProofUrl ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -115,7 +133,11 @@ export default async function AdminDashboard() {
                         <p className="text-sm text-white font-medium">{res.user.name} ({res.user.email})</p>
                         <p className="text-sm text-gray-400">{res.event.title}</p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {res.seatCount} seats: {res.seats.map(s => s.label).join(", ")}
+                          {res.seatCount} seats:{" "}
+                          {formatSeatLabelsForDisplay(
+                            res.seats.map((s) => s.label),
+                            seatLabelFormat,
+                          )}
                         </p>
                         <p className="text-sm font-bold text-white mt-2">
                           {res.event.currency}{Number(res.totalAmount).toFixed(2)}
