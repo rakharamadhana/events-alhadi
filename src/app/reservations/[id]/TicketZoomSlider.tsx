@@ -6,7 +6,8 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   TicketIcon,
-  QrCodeIcon
+  QrCodeIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import { formatBankRefForTransfer } from "@/lib/bankRef";
 import {
@@ -19,6 +20,7 @@ interface Seat {
   row: string;
   number: number;
   label: string;
+  isCheckedIn?: boolean;
 }
 
 interface Sponsor {
@@ -241,6 +243,14 @@ export default function TicketZoomSlider({
                         {t.officialAdmission}
                       </span>
                     </div>
+                    {seat.isCheckedIn && (
+                      <div className="absolute top-3 right-4 animate-fade-in z-10">
+                        <span className="checked-in-stamp-badge flex items-center gap-1.5 bg-emerald-600/90 text-white font-extrabold text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border border-emerald-500 shadow-lg backdrop-blur-sm">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-200 animate-pulse" />
+                          {t.checkedInBadge || "Checked In"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="h-28 w-full bg-gradient-to-r from-emerald-600 to-teal-700 relative flex flex-col justify-end p-4 overflow-hidden">
@@ -250,6 +260,14 @@ export default function TicketZoomSlider({
                         {t.officialAdmission}
                       </span>
                     </div>
+                    {seat.isCheckedIn && (
+                      <div className="absolute top-3 right-4 animate-fade-in z-10">
+                        <span className="checked-in-stamp-badge flex items-center gap-1.5 bg-emerald-600/90 text-white font-extrabold text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border border-emerald-500 shadow-lg backdrop-blur-sm">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-250 animate-pulse" />
+                          {t.checkedInBadge || "Checked In"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -325,12 +343,25 @@ export default function TicketZoomSlider({
                   <p className="text-[9px] font-mono text-gray-400 truncate">REF: {formatBankRefForTransfer(reservation.bankRef)}</p>
                 </div>
 
-                <div className="bg-white p-2 rounded-xl border border-gray-700 flex items-center justify-center shadow-inner">
+                <div className={`relative p-2 rounded-xl border flex items-center justify-center shadow-inner transition-all duration-300 ${
+                  seat.isCheckedIn 
+                    ? "bg-emerald-50/10 border-emerald-500 shadow-emerald-500/10" 
+                    : "bg-white border-gray-700"
+                }`}>
                   <img
                     src={qrUrl}
                     alt="Check-in QR Code"
-                    className="w-20 h-20 object-contain animate-fade-in"
+                    className={`w-20 h-20 object-contain animate-fade-in transition-all duration-300 ${
+                      seat.isCheckedIn ? "opacity-35 filter grayscale-[40%]" : ""
+                    }`}
                   />
+                  {seat.isCheckedIn && (
+                    <div className="absolute inset-0 bg-emerald-950/20 backdrop-blur-[0.5px] rounded-xl flex items-center justify-center">
+                      <div className="bg-emerald-500/95 text-white p-1 rounded-full shadow-lg border border-emerald-400 animate-scale-up">
+                        <CheckCircleIcon className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="text-right md:text-center space-y-0.5">
@@ -398,6 +429,14 @@ export default function TicketZoomSlider({
                       {t.secureEntry}
                     </span>
                   </div>
+                  {reservation.seats[activeZoomIndex].isCheckedIn && (
+                    <div className="absolute top-3 right-4 animate-fade-in z-10 sm:top-4 sm:right-5">
+                      <span className="flex items-center gap-1.5 bg-emerald-600/90 text-white font-extrabold text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border border-emerald-500 shadow-lg backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-200 animate-pulse" />
+                        {t.checkedInBadge || "Checked In"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="relative flex h-24 w-full shrink-0 flex-col justify-end overflow-hidden bg-gradient-to-br from-emerald-700 to-teal-800 p-4 sm:h-32 sm:p-5">
@@ -407,6 +446,14 @@ export default function TicketZoomSlider({
                       {t.secureEntry}
                     </span>
                   </div>
+                  {reservation.seats[activeZoomIndex].isCheckedIn && (
+                    <div className="absolute top-3 right-4 animate-fade-in z-10 sm:top-4 sm:right-5">
+                      <span className="flex items-center gap-1.5 bg-emerald-600/90 text-white font-extrabold text-[10px] tracking-widest uppercase px-3 py-1 rounded-full border border-emerald-500 shadow-lg backdrop-blur-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-250 animate-pulse" />
+                        {t.checkedInBadge || "Checked In"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -426,16 +473,36 @@ export default function TicketZoomSlider({
 
                 {/* Massive Scanner-Optimized QR Code */}
                 <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-gray-800 bg-gray-950/50 p-3 sm:gap-3 sm:p-4">
-                  <div className="flex items-center justify-center rounded-2xl border-4 border-emerald-500/20 bg-white p-2 shadow-xl sm:p-3">
+                  <div className={`relative flex items-center justify-center rounded-2xl border-4 bg-white p-2 shadow-xl sm:p-3 transition-colors duration-300 ${
+                    reservation.seats[activeZoomIndex].isCheckedIn
+                      ? "border-emerald-500/40"
+                      : "border-emerald-500/20"
+                  }`}>
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                         `${reservation.id}_${reservation.seats[activeZoomIndex].id}`
                       )}&color=047857`}
                       alt="Check-in QR Code Large"
-                      className="h-36 w-36 object-contain sm:h-44 sm:w-44"
+                      className={`h-36 w-36 object-contain sm:h-44 sm:w-44 transition-all duration-300 ${
+                        reservation.seats[activeZoomIndex].isCheckedIn ? "opacity-25 filter grayscale-[30%]" : ""
+                      }`}
                     />
+                    {reservation.seats[activeZoomIndex].isCheckedIn && (
+                      <div className="absolute inset-0 bg-emerald-950/20 backdrop-blur-[0.5px] rounded-2xl flex flex-col items-center justify-center gap-2">
+                        <div className="bg-emerald-500/95 text-white p-2 rounded-full shadow-2xl border border-emerald-400 animate-scale-up">
+                          <CheckCircleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                        </div>
+                        <span className="bg-emerald-600 text-white text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full border border-emerald-500 shadow-lg">
+                          {t.checkedInBadge || "Checked In"}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-[9px] text-gray-500 font-medium">{t.pleasePresentQrCode}</p>
+                  <p className="text-[9px] text-gray-500 font-medium">
+                    {reservation.seats[activeZoomIndex].isCheckedIn 
+                      ? "This ticket has been verified and used." 
+                      : t.pleasePresentQrCode}
+                  </p>
                 </div>
 
                 {/* Assigned Seat Block (Extra large for ushers) */}

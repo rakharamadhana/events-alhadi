@@ -217,6 +217,7 @@
     "refundApprovedMsg": "Refund approved and seats released.",
     "refundRejectedMsg": "Refund request rejected; ticket remains active.",
     "refundActionFailed": "Unable to update refund request.",
+    "refundBlockedCheckedIn": "Refunds are disabled as this ticket is marked as used. One or more seats on this ticket have already checked in at the venue.",
     "refundRejectNotePrompt": "Why is this refund request being rejected? This note will be visible to the user.",
     "refundRejectNoteRequired": "Please provide a rejection note with at least 5 characters.",
     "refundReviewNote": "Review Note",
@@ -273,7 +274,29 @@
     "tierPlatinum": "Platinum",
     "tierGold": "Gold",
     "tierSilver": "Silver",
-    "tierBronze": "Bronze"
+    "tierBronze": "Bronze",
+    "navCheckin": "Check-in Desk",
+    "checkinTitle": "Participant Check-in Desk",
+    "selectEventAgenda": "Select Agenda / Event",
+    "checkinScanSearchPlaceholder": "Enter QR code string, name, email or seat label...",
+    "scanQrCode": "Scan or Type QR Code",
+    "checkinButton": "Check In",
+    "manualCheckin": "Manual Check-in",
+    "undoCheckin": "Undo Check-in",
+    "checkedInSuccess": "Participant checked in successfully!",
+    "alreadyCheckedIn": "Participant already checked in!",
+    "unpaidTicketWarning": "Ticket is unpaid or pending validation!",
+    "demographicsTitle": "Participant Demographics",
+    "totalTicketsBought": "Tickets Bought",
+    "seatsLeft": "Seats Left",
+    "seatsOccupied": "Checked In (Arrived)",
+    "seatsBooked": "Booked (Not Arrived)",
+    "seatsPending": "Pending Payment / Locked",
+    "genderBreakdown": "Gender Breakdown",
+    "cityBreakdown": "City Distribution",
+    "ageBreakdown": "Age Breakdown",
+    "nationalityBreakdown": "Nationality Distribution",
+    "refundBlockedCheckedIn": "Refunds are disabled as this ticket is marked as used."
   },
   "reservationDetails": {
     "backToDashboard": "Back to Dashboard",
@@ -382,6 +405,8 @@
     "invalidFormatError": "Please select a valid image (JPEG, PNG, or WEBP).",
     "fileSizeError": "File size must be under 1MB.",
     "uploadFailedError": "Failed to upload proof of payment.",
-    "serverLimitError": "Failed to upload file. The file size may have exceeded the 1MB server limit."
+    "serverLimitError": "Failed to upload file. The file size may have exceeded the 1MB server limit.",
+    "checkedInBadge": "Successfully Checked In",
+    "checkedInAt": "Arrived at {time}"
   }
 }

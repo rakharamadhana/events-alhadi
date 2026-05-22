@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon, UserGroupIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, UserGroupIcon, CurrencyDollarIcon, CheckBadgeIcon } from "@heroicons/react/24/outline";
 import AdminClientActions from "./AdminClientActions";
 import AdminEventCreator from "./AdminEventCreator";
 import type { Metadata } from "next";
@@ -53,6 +53,10 @@ export default async function AdminDashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <AdminEventCreator />
+            <Link href="/admin/checkin" className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors">
+              <CheckBadgeIcon className="mr-2 h-4 w-4" />
+              {t.admin.navCheckin || "Check-in Desk"}
+            </Link>
             <Link href="/" className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
               <ArrowLeftIcon className="mr-2 h-4 w-4" />
               Back to App

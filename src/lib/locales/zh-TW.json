@@ -217,6 +217,7 @@
     "refundApprovedMsg": "退票已核准，座位已釋放。",
     "refundRejectedMsg": "退票申請已拒絕，票券仍維持有效。",
     "refundActionFailed": "無法更新退票申請。",
+    "refundBlockedCheckedIn": "由於此票券已標記為已使用，退票功能已被禁用。此票券中有一張或多張座位已在現場進行核銷報到。",
     "refundRejectNotePrompt": "請說明拒絕此退票申請的原因。此說明將顯示給使用者查看。",
     "refundRejectNoteRequired": "請輸入至少 5 個字元的拒絕原因。",
     "refundReviewNote": "審核說明",
@@ -273,7 +274,29 @@
     "tierPlatinum": "白金",
     "tierGold": "黃金",
     "tierSilver": "白銀",
-    "tierBronze": "青銅"
+    "tierBronze": "青銅",
+    "navCheckin": "報到處",
+    "checkinTitle": "活動參與者報到處",
+    "selectEventAgenda": "選擇活動 / 議程",
+    "checkinScanSearchPlaceholder": "輸入 QR code 字串、姓名、電子郵件或座位標籤...",
+    "scanQrCode": "掃描或輸入 QR Code",
+    "checkinButton": "辦理報到",
+    "manualCheckin": "手動報到",
+    "undoCheckin": "取消報到",
+    "checkedInSuccess": "參與者報到成功！",
+    "alreadyCheckedIn": "參與者已經辦理過報到！",
+    "unpaidTicketWarning": "票券未付款或等待確認！",
+    "demographicsTitle": "參與者客群分佈",
+    "totalTicketsBought": "已購票數",
+    "seatsLeft": "剩餘座位",
+    "seatsOccupied": "已報到 (已入場)",
+    "seatsBooked": "已預訂 (未入場)",
+    "seatsPending": "付款中 / 已鎖定",
+    "genderBreakdown": "性別比例",
+    "cityBreakdown": "城市分佈",
+    "ageBreakdown": "年齡層分佈",
+    "nationalityBreakdown": "國籍分佈",
+    "refundBlockedCheckedIn": "退票功能已停用，因為該票券已被使用。"
   },
   "reservationDetails": {
     "backToDashboard": "返回儀表板",
@@ -382,6 +405,8 @@
     "invalidFormatError": "請選擇有效的圖片格式 (JPEG, PNG 或 WEBP)。",
     "fileSizeError": "檔案大小必須小於 1MB。",
     "uploadFailedError": "上傳付款憑證失敗。",
-    "serverLimitError": "上傳檔案失敗。檔案大小可能超過了 1MB 的伺服器限制。"
+    "serverLimitError": "上傳檔案失敗。檔案大小可能超過了 1MB 的伺服器限制。",
+    "checkedInBadge": "已成功核銷",
+    "checkedInAt": "於 {time} 入場"
   }
 }

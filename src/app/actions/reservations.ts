@@ -453,11 +453,24 @@ export async function requestRefund(reservationId: string, reason: string) {
         userId: true,
         eventId: true,
         status: true,
+        seats: {
+          select: {
+            isCheckedIn: true,
+          },
+        },
       },
     });
 
     if (!reservation) {
       return { success: false, error: "Reservation not found." };
+    }
+
+    const isAnySeatCheckedIn = reservation.seats.some(s => s.isCheckedIn);
+    if (isAnySeatCheckedIn) {
+      return {
+        success: false,
+        error: "Refunds cannot be requested because one or more tickets in this reservation have already been checked in or used.",
+      };
     }
 
     if (

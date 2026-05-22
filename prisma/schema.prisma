@@ -142,6 +142,9 @@ model Seat {
   lockedUntil DateTime? // NULL when AVAILABLE or SOLD
   lockedBy    String? // userId who locked the seat
 
+  isCheckedIn Boolean   @default(false)
+  checkedInAt DateTime?
+
   // Optimistic locking: every write increments the version.
   // UPDATE ... WHERE id = ? AND version = ? prevents lost-update races.
   version Int @default(0)
