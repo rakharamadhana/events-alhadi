@@ -73,12 +73,20 @@ export default async function Dashboard() {
 
   const dateLocale = locale === "zh-TW" ? "zh-TW" : undefined;
 
+  // Filter out fully checked-in reservations from the homepage "My Reservations" list
+  const activeReservations = reservations.filter((res) => {
+    if (res.status !== "SUCCESS") return true;
+    const checkedInCount = res.seats.filter((s) => s.isCheckedIn).length;
+    const totalCount = res.seats.length;
+    return checkedInCount < totalCount;
+  });
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {/* My Reservations Section */}
-        {reservations.length > 0 && (
+        {activeReservations.length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
               <TicketIcon className="h-6 w-6 text-emerald-400 mr-2" />
@@ -86,7 +94,7 @@ export default async function Dashboard() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reservations.map((res) => {
+              {activeReservations.map((res) => {
                 const isPending = res.status === "PENDING_PAYMENT";
                 const isSuccess = res.status === "SUCCESS";
                 const isRefundRequested = res.status === "REFUND_REQUESTED";
@@ -97,6 +105,44 @@ export default async function Dashboard() {
                   res.status === "REFUNDED";
                 const localizedEvent = localizeEvent(res.event, locale);
 
+                const checkedInCount = res.seats.filter((s) => s.isCheckedIn).length;
+                const totalCount = res.seats.length;
+                const isFullyCheckedIn = isSuccess && checkedInCount === totalCount;
+                const isPartiallyCheckedIn = isSuccess && checkedInCount > 0 && checkedInCount < totalCount;
+
+                let badgeClasses = "bg-gray-500/10 text-gray-300 border border-gray-500/20";
+                let badgeText = "";
+
+                if (isPending) {
+                  badgeClasses = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                  badgeText = t.dashboard.pendingPayment;
+                } else if (isRefundRequested) {
+                  badgeClasses = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+                  badgeText = t.dashboard.refundRequested;
+                } else if (isRefunded) {
+                  badgeClasses = "bg-gray-500/10 text-gray-300 border border-gray-500/20";
+                  badgeText = t.dashboard.refunded;
+                } else if (res.status === "EXPIRED") {
+                  badgeClasses = "bg-red-500/10 text-red-400 border border-red-500/20";
+                  badgeText = t.dashboard.expired;
+                } else if (res.status === "CANCELLED") {
+                  badgeClasses = "bg-red-500/10 text-red-400 border border-red-500/20";
+                  badgeText = t.dashboard.cancelled;
+                } else if (isSuccess) {
+                  if (isFullyCheckedIn) {
+                    badgeClasses = "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                    badgeText = t.dashboard.checkedIn;
+                  } else if (isPartiallyCheckedIn) {
+                    badgeClasses = "bg-teal-500/15 text-teal-300 border border-teal-500/20";
+                    badgeText = t.dashboard.partiallyCheckedIn
+                      .replace("{checked}", String(checkedInCount))
+                      .replace("{total}", String(totalCount));
+                  } else {
+                    badgeClasses = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    badgeText = t.dashboard.activeTicket;
+                  }
+                }
+
                 return (
                   <div
                     key={res.id}
@@ -105,7 +151,11 @@ export default async function Dashboard() {
                         isPending
                           ? "border-amber-500/30 hover:border-amber-500/50 shadow-lg shadow-amber-500/5"
                           : isSuccess
-                            ? "border-emerald-500/30 hover:border-emerald-500/50 shadow-lg shadow-emerald-500/5"
+                            ? isFullyCheckedIn
+                              ? "border-emerald-500/40 hover:border-emerald-500/60 shadow-lg shadow-emerald-500/10"
+                              : isPartiallyCheckedIn
+                                ? "border-teal-500/30 hover:border-teal-500/50 shadow-lg shadow-teal-500/5"
+                                : "border-emerald-500/30 hover:border-emerald-500/50 shadow-lg shadow-emerald-500/5"
                             : isRefundRequested
                               ? "border-sky-500/30 hover:border-sky-500/50 shadow-lg shadow-sky-500/5"
                               : "border-gray-700 hover:border-gray-600"
@@ -118,37 +168,18 @@ export default async function Dashboard() {
                           {localizedEvent.title}
                         </h3>
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0
-                          ${
-                            isPending
-                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                              : isSuccess
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : isRefundRequested
-                                  ? "bg-sky-500/10 text-sky-400 border border-sky-500/20"
-                                  : isRefunded
-                                    ? "bg-gray-500/10 text-gray-300 border border-gray-500/20"
-                                    : "bg-red-500/10 text-red-400 border border-red-500/20"
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0 ${badgeClasses}`}
                         >
                           {isPending && (
                             <ClockIcon className="h-3.5 w-3.5 mr-1" />
                           )}
-                          {isSuccess && (
+                          {(isSuccess || isFullyCheckedIn || isPartiallyCheckedIn) && (
                             <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
                           )}
                           {isExpired && (
                             <XCircleIcon className="h-3.5 w-3.5 mr-1" />
                           )}
-
-                          {res.status === "PENDING_PAYMENT" &&
-                            t.dashboard.pendingPayment}
-                          {res.status === "SUCCESS" && t.dashboard.activeTicket}
-                          {res.status === "REFUND_REQUESTED" &&
-                            t.dashboard.refundRequested}
-                          {res.status === "REFUNDED" && t.dashboard.refunded}
-                          {res.status === "EXPIRED" && t.dashboard.expired}
-                          {res.status === "CANCELLED" && t.dashboard.cancelled}
+                          {badgeText}
                         </span>
                       </div>
 
@@ -172,16 +203,40 @@ export default async function Dashboard() {
 
                       {/* Seats & Cost info */}
                       <div className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/50 mb-6 space-y-3">
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-400">
+                        <div className="flex justify-between items-start text-sm">
+                          <span className="text-gray-400 pt-0.5">
                             {t.dashboard.seats} ({res.seatCount})
                           </span>
-                          <span className="font-semibold text-white font-mono">
-                            {formatSeatLabelsForDisplay(
-                              res.seats.map((s) => s.label),
-                              seatLabelFormat,
-                            )}
-                          </span>
+                          <div className="flex flex-wrap justify-end gap-1.5 max-w-[70%]">
+                            {res.seats.map((seat) => {
+                              const seatDisplayName = formatSeatLabelsForDisplay(
+                                [seat.label],
+                                seatLabelFormat,
+                              );
+                              return (
+                                <span
+                                  key={seat.label}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border font-mono tracking-tight transition-all duration-300
+                                    ${
+                                      seat.isCheckedIn
+                                        ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30 shadow-sm shadow-emerald-500/5"
+                                        : "bg-gray-800 text-gray-300 border-gray-700"
+                                    }`}
+                                >
+                                  {seat.isCheckedIn && (
+                                    <>
+                                      <span className="relative mr-1.5 flex h-1.5 w-1.5">
+                                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                      </span>
+                                      <span className="mr-0.5 text-emerald-400 font-bold">✓</span>
+                                    </>
+                                  )}
+                                  {seatDisplayName}
+                                </span>
+                              );
+                            })}
+                          </div>
                         </div>
                         <div className="flex justify-between items-center text-sm border-t border-gray-800 pt-2">
                           <span className="text-gray-400">

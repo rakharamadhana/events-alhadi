@@ -47,6 +47,7 @@ export default async function ProfileReservationsPage() {
       },
       seats: reservation.seats.map((seat) => ({
         label: seat.label,
+        isCheckedIn: seat.isCheckedIn,
       })),
     };
   });
@@ -86,6 +87,8 @@ export default async function ProfileReservationsPage() {
             viewDetails: t.dashboard.viewDetails,
             pendingPayment: t.dashboard.pendingPayment,
             activeTicket: t.dashboard.activeTicket,
+            checkedIn: t.dashboard.checkedIn,
+            partiallyCheckedIn: t.dashboard.partiallyCheckedIn,
             refundRequested: t.dashboard.refundRequested,
             refunded: t.dashboard.refunded,
             expired: t.dashboard.expired,

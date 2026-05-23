@@ -419,10 +419,10 @@ export default function ReservationClient({
               <div>
                 <h3 className="text-base font-extrabold text-white uppercase tracking-wider mb-1 flex items-center gap-2">
                   <CreditCardIcon className="h-5 w-5 text-emerald-400" />
-                  Reservation Desk Control Panel
+                  {t.reservationDetails.controlPanelTitle}
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Select any option below to view transfer details, check seating blueprints, view receipts, or manage options.
+                  {t.reservationDetails.controlPanelDesc}
                 </p>
               </div>
 
@@ -452,8 +452,8 @@ export default function ReservationClient({
                     </h4>
                     <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                       {isPending 
-                        ? "View bank account details and submit payment proof transfer receipt."
-                        : "Review verified bank transaction receipt and payment confirmation logs."
+                        ? t.reservationDetails.receiptPendingDesc
+                        : t.reservationDetails.receiptSuccessDesc
                       }
                     </p>
                   </div>
@@ -473,7 +473,7 @@ export default function ReservationClient({
                         {t.reservationDetails.findMySeatTitle}
                       </h4>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                        Identify where your assigned green seat is located relative to the stage layout.
+                        {t.reservationDetails.findMySeatDesc}
                       </p>
                     </div>
                   </button>
@@ -491,9 +491,9 @@ export default function ReservationClient({
                     <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors">
                       {t.reservationDetails.detailsTitle}
                     </h4>
-                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                      View invoice receipt details, reserved seats lists, applied coupons, and timestamps.
-                    </p>
+                      <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                        {t.reservationDetails.detailsDesc}
+                      </p>
                   </div>
                 </button>
 
@@ -508,12 +508,12 @@ export default function ReservationClient({
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-white group-hover:text-rose-300 transition-colors">
-                        Refund Options
+                        {t.reservationDetails.refundOptionsTitle}
                       </h4>
                       <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                        {isRefundRequested && "Your refund request is under review. Check details."}
-                        {isRefunded && "Your refund has been processed. Check confirmation."}
-                        {isSuccess && "Request a ticket cancellation refund if you cannot attend."}
+                        {isRefundRequested && t.reservationDetails.refundRequestedDesc}
+                        {isRefunded && t.reservationDetails.refundedDesc}
+                        {isSuccess && t.reservationDetails.refundSuccessDesc}
                       </p>
                     </div>
                   </button>
@@ -679,12 +679,12 @@ export default function ReservationClient({
               />
             </div>
             <p className="text-xs text-gray-400 text-center mt-1">
-              Your transaction transfer proof receipt has been validated by admins.
+              {t.reservationDetails.verifiedReceiptValidated}
             </p>
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            No active payment instructions or receipts found for this order.
+            {t.reservationDetails.noPaymentInstructions}
           </div>
         )}
       </Modal>
@@ -777,7 +777,7 @@ export default function ReservationClient({
               </div>
             )}
 
-            <div className="sm:col-span-1 border-t border-gray-700/40 pt-4">
+            <div className={`border-t border-gray-700/40 pt-4 ${isSuccess ? "sm:col-span-2" : "sm:col-span-1"}`}>
               <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 {t.reservationDetails.paymentStatusLabel}
               </dt>
@@ -789,28 +789,30 @@ export default function ReservationClient({
               ) : (
                 <dd className="mt-1 font-bold text-amber-400 flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                  Pending Proof
+                  {t.reservationDetails.pendingProofStatus}
                 </dd>
               )}
             </div>
 
-            <div className="sm:col-span-1 border-t border-gray-700/40 pt-4">
-              <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {isClosed ? t.reservationDetails.expiredAtLabel : t.reservationDetails.deadlineLabel}
-              </dt>
-              <dd className={`mt-1 font-medium ${isExpired ? "text-red-400" : "text-amber-400"}`}>
-                {new Date(reservation.expiresAt).toLocaleString(
-                  locale === "zh-TW" ? "zh-TW" : "en-US",
-                  {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  },
-                )}
-              </dd>
-            </div>
+            {!isSuccess && (
+              <div className="sm:col-span-1 border-t border-gray-700/40 pt-4">
+                <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {isClosed ? t.reservationDetails.expiredAtLabel : t.reservationDetails.deadlineLabel}
+                </dt>
+                <dd className={`mt-1 font-medium ${isExpired ? "text-red-400" : "text-amber-400"}`}>
+                  {new Date(reservation.expiresAt).toLocaleString(
+                    locale === "zh-TW" ? "zh-TW" : "en-US",
+                    {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  )}
+                </dd>
+              </div>
+            )}
 
             <div className="sm:col-span-2 border-t border-gray-700/40 pt-4">
               <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -830,7 +832,7 @@ export default function ReservationClient({
       <Modal
         isOpen={activeModal === "refund"}
         onClose={() => setActiveModal(null)}
-        title="Refund Options Desk"
+        title={t.reservationDetails.refundOptionsDesk}
       >
         <div className="space-y-6">
           {/* A. If Already Checked In (Blocking Refunds) */}
@@ -838,12 +840,12 @@ export default function ReservationClient({
             <div className="bg-rose-950/20 border border-rose-500/20 p-5 rounded-xl text-sm text-rose-300 flex items-start gap-3">
               <InformationCircleIcon className="h-6 w-6 text-rose-400 shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-bold text-white text-base">Refund Eligibility Blocked</h4>
+                <h4 className="font-bold text-white text-base">{t.reservationDetails.refundBlockedTitle}</h4>
                 <p className="mt-2 text-gray-300 leading-relaxed">
-                  {t.admin.refundBlockedCheckedIn || "Refunds are disabled as this ticket is marked as used."}
+                  {t.admin.refundBlockedCheckedIn || t.reservationDetails.refundBlockedCheckedInDesc}
                 </p>
                 <p className="text-xs text-gray-450 mt-1.5 leading-relaxed">
-                  One or more seats on this ticket have already checked in at the venue. Verified used tickets cannot be cancelled or refunded.
+                  {t.reservationDetails.refundBlockedCheckedInDesc}
                 </p>
               </div>
             </div>
@@ -928,7 +930,7 @@ export default function ReservationClient({
                   <ProofZoomClient
                     src={reservation.refundProofUrl}
                     alt={t.reservationDetails.refundProofAlt}
-                    clickToZoomLabel={t.clickToZoomProof}
+                    clickToZoomLabel={t.reservationDetails.clickToZoomProof}
                     modalTitleLabel={t.reservationDetails.refundProofTitle}
                     modalSubTitleLabel={t.reservationDetails.refundProofDesc}
                     footerLabel={t.reservationDetails.refunded}

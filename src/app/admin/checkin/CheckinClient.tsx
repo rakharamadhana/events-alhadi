@@ -961,6 +961,110 @@ export default function CheckinClient({
           color: #f87171 !important; /* text-rose-400 */
         }
 
+        /* Search Suggestions Dropdown styles (Dark Mode by default) */
+        .checkin-search-dropdown {
+          background-color: #111827 !important; /* bg-gray-900 */
+          border: 1px solid #374151 !important; /* border-gray-700 */
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5) !important;
+        }
+        .checkin-dropdown-header {
+          border-bottom: 1px solid #1f2937 !important; /* border-gray-800 */
+          background-color: rgba(3, 7, 18, 0.4) !important; /* bg-gray-950/40 */
+          color: #9ca3af !important; /* text-gray-405 */
+        }
+        .checkin-dropdown-item {
+          border-bottom: 1px solid rgba(31, 41, 55, 0.5) !important; /* border-gray-800/50 */
+          color: #e5e7eb !important; /* text-gray-200 */
+        }
+        .checkin-dropdown-item:hover {
+          background-color: #1f2937 !important; /* hover:bg-gray-800 */
+        }
+        .checkin-dropdown-text-primary {
+          color: #ffffff !important;
+        }
+        .checkin-dropdown-text-secondary {
+          color: #9ca3af !important;
+        }
+
+        /* Search Suggestions Dropdown overrides for Light Mode */
+        :root[data-theme="light"] .checkin-search-dropdown,
+        [data-theme="light"] .checkin-search-dropdown,
+        .light .checkin-search-dropdown {
+          background-color: #ffffff !important;
+          border: 1px solid rgba(6, 79, 67, 0.2) !important;
+          box-shadow: 0 10px 30px rgba(8, 63, 54, 0.1) !important;
+        }
+        :root[data-theme="light"] .checkin-dropdown-header,
+        [data-theme="light"] .checkin-dropdown-header,
+        .light .checkin-dropdown-header {
+          border-bottom: 1px solid rgba(6, 79, 67, 0.1) !important;
+          background-color: #fbfaf4 !important;
+          color: #083f36 !important;
+        }
+        :root[data-theme="light"] .checkin-dropdown-item,
+        [data-theme="light"] .checkin-dropdown-item,
+        .light .checkin-dropdown-item {
+          border-bottom: 1px solid rgba(6, 79, 67, 0.08) !important;
+          color: #1f2937 !important;
+        }
+        :root[data-theme="light"] .checkin-dropdown-item:hover,
+        [data-theme="light"] .checkin-dropdown-item:hover,
+        .light .checkin-dropdown-item:hover {
+          background-color: #f6f5ea !important;
+        }
+        :root[data-theme="light"] .checkin-dropdown-text-primary,
+        [data-theme="light"] .checkin-dropdown-text-primary,
+        .light .checkin-dropdown-text-primary {
+          color: #083f36 !important;
+        }
+        :root[data-theme="light"] .checkin-dropdown-text-secondary,
+        [data-theme="light"] .checkin-dropdown-text-secondary,
+        .light .checkin-dropdown-text-secondary {
+          color: #4b5563 !important;
+        }
+
+        /* Check-in action button overrides for high contrast */
+        .checkin-btn-submit {
+          background-color: #4f46e5 !important; /* bg-indigo-600 */
+          color: #ffffff !important; /* MUST BE WHITE TEXT! */
+          border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        }
+        .checkin-btn-submit:hover:not(:disabled) {
+          background-color: #4338ca !important; /* hover:bg-indigo-700 */
+        }
+        .checkin-btn-submit:disabled {
+          opacity: 0.4 !important;
+          cursor: not-allowed !important;
+        }
+
+        :root[data-theme="light"] .checkin-btn-submit,
+        [data-theme="light"] .checkin-btn-submit,
+        .light .checkin-btn-submit {
+          background-color: #064f43 !important; /* Premium dark green button */
+          color: #ffffff !important; /* MUST BE WHITE TEXT! */
+          border: 1px solid rgba(6, 79, 67, 0.2) !important;
+        }
+        :root[data-theme="light"] .checkin-btn-submit:hover:not(:disabled),
+        [data-theme="light"] .checkin-btn-submit:hover:not(:disabled),
+        .light .checkin-btn-submit:hover:not(:disabled) {
+          background-color: #083f36 !important;
+        }
+
+        /* Responsive contrast-safe Arrived badges */
+        .checkin-badge-arrived {
+          background-color: rgba(6, 78, 59, 0.4) !important;
+          border: 1px solid rgba(52, 211, 153, 0.3) !important;
+          color: #34d399 !important;
+        }
+
+        :root[data-theme="light"] .checkin-badge-arrived,
+        [data-theme="light"] .checkin-badge-arrived,
+        .light .checkin-badge-arrived {
+          background-color: #d1fae5 !important;
+          border: 1px solid #10b981 !important;
+          color: #065f46 !important;
+        }
+
         /* Custom checkin user icon container style overrides */
         .checkin-user-icon-container {
           background-color: rgba(99, 102, 241, 0.15) !important;
@@ -1083,7 +1187,7 @@ export default function CheckinClient({
           <div className="lg:col-span-1 space-y-6">
             
             {/* Direct Ticket scanner console */}
-            <div className="bg-gray-900/80 border border-gray-800 p-6 rounded-2xl shadow-xl backdrop-blur relative">
+            <div className="bg-gray-900/80 border border-gray-800 p-6 rounded-2xl shadow-xl backdrop-blur relative z-20">
               <h3 className="text-sm uppercase font-extrabold text-indigo-400 tracking-wider mb-4 flex items-center gap-2">
                 <QrCodeIcon className="h-5 w-5" />
                 {t.admin.scanQrCode || "Scan or Type QR Code"}
@@ -1097,7 +1201,14 @@ export default function CheckinClient({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t.admin.checkinScanSearchPlaceholder || "Enter QR, name, email or seat..."}
-                      className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-12 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-all"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck="false"
+                      data-1p-ignore="true"
+                      data-lpignore="true"
+                      name="ticketSearch"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-28 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 transition-all"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
@@ -1106,7 +1217,7 @@ export default function CheckinClient({
                       <button
                         type="button"
                         onClick={() => setSearchQuery("")}
-                        className="absolute inset-y-0 right-10 pr-1.5 flex items-center text-gray-400 hover:text-white"
+                        className="absolute inset-y-0 right-20 flex items-center text-gray-400 hover:text-white"
                       >
                         <XMarkIcon className="h-4 w-4" />
                       </button>
@@ -1114,78 +1225,78 @@ export default function CheckinClient({
                     <button
                       type="submit"
                       disabled={scannerLoading || !searchQuery.trim()}
-                      className="absolute inset-y-1.5 right-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all disabled:opacity-40"
+                      className="absolute inset-y-1.5 right-1.5 px-3 rounded-lg text-xs font-bold transition-all checkin-btn-submit"
                     >
                       {scannerLoading ? "..." : (t.admin.checkinButton || "Check In")}
                     </button>
+
+                    {/* Dynamic search suggestions matched dropdown */}
+                    {searchQuery.trim().length > 0 && (
+                      <div className="absolute left-0 right-0 mt-2 rounded-xl shadow-2xl overflow-hidden z-40 max-h-[300px] overflow-y-auto custom-scrollbar checkin-search-dropdown">
+                        <div className="p-2 text-[10px] font-bold tracking-wider checkin-dropdown-header">
+                          MATCHED TICKETS ({searchMatches.length})
+                        </div>
+                        {searchMatches.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-gray-500">
+                            No matching reservations found.
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-gray-850">
+                            {searchMatches.map((seat) => (
+                              <div
+                                key={seat.id}
+                                onClick={() => {
+                                  setActiveSeat(seat);
+                                }}
+                                className="p-3 flex items-center justify-between gap-3 cursor-pointer transition-colors checkin-dropdown-item"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-xs bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">
+                                      {seat.label}
+                                    </span>
+                                    <span className="font-bold text-xs truncate checkin-dropdown-text-primary">
+                                      {seat.reservation?.user?.name || "Anonymous"}
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] truncate mt-0.5 checkin-dropdown-text-secondary">
+                                    {seat.reservation?.user?.email || "No email"}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {seat.isCheckedIn ? (
+                                    <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 checkin-badge-arrived">
+                                      <CheckIcon className="h-3 w-3 shrink-0" /> Arrived
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckInSubmit(undefined, `${seat.reservation?.id}_${seat.id}`);
+                                      }}
+                                      className="text-[9px] uppercase font-extrabold px-2.5 py-1 rounded-full transition-all shadow-md checkin-btn-submit"
+                                    >
+                                      {t.admin.checkinButton || "Check In"}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </form>
                 <button
                   type="button"
                   onClick={() => setIsCameraOpen(true)}
-                  className="p-3 rounded-xl bg-gray-800 hover:bg-gray-705 border border-gray-700 text-gray-400 hover:text-white transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-sm"
+                  className="p-3 rounded-xl bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-400 hover:text-white transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-sm"
                   title="Scan QR Code with Camera"
                 >
                   <QrCodeIcon className="h-5 w-5" />
                 </button>
               </div>
-
-              {/* Dynamic search suggestions matched dropdown */}
-              {searchQuery.trim().length > 0 && (
-                <div className="absolute left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-40 max-h-[300px] overflow-y-auto custom-scrollbar">
-                  <div className="p-2 border-b border-gray-800 text-[10px] font-bold text-gray-500 tracking-wider bg-gray-950/40">
-                    MATCHED TICKETS ({searchMatches.length})
-                  </div>
-                  {searchMatches.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-gray-500">
-                      No matching reservations found.
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-850">
-                      {searchMatches.map((seat) => (
-                        <div
-                          key={seat.id}
-                          onClick={() => {
-                            setActiveSeat(seat);
-                          }}
-                          className="p-3 hover:bg-gray-800 flex items-center justify-between gap-3 cursor-pointer transition-colors"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-xs bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">
-                                {seat.label}
-                              </span>
-                              <span className="font-bold text-xs text-white truncate">
-                                {seat.reservation?.user?.name || "Anonymous"}
-                              </span>
-                            </div>
-                            <div className="text-[10px] text-gray-400 truncate mt-0.5">
-                              {seat.reservation?.user?.email || "No email"}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {seat.isCheckedIn ? (
-                              <span className="text-[9px] uppercase font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                                <CheckIcon className="h-3 w-3 shrink-0" /> Arrived
-                              </span>
-                            ) : (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCheckInSubmit(undefined, `${seat.reservation?.id}_${seat.id}`);
-                                }}
-                                className="text-[9px] uppercase font-extrabold bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/20 px-2.5 py-1 rounded-full text-white transition-all shadow-md"
-                              >
-                                {t.admin.checkinButton || "Check In"}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Agendas breakdown statistics counters */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -14,6 +14,29 @@ import {
   formatSeatLabelForDisplay,
   type SeatLabelFormat,
 } from "@/lib/seatLabel";
+import QRCode from "qrcode";
+
+const getCrossOrigin = (url?: string | null) => {
+  if (!url) return undefined;
+  if (typeof window === "undefined") return undefined;
+  if (url.startsWith("/") || url.startsWith(window.location.origin)) {
+    return undefined;
+  }
+  return "anonymous";
+};
+
+const getProxiedUrl = (url?: string | null) => {
+  if (!url) return "";
+  if (
+    url.startsWith("/") ||
+    url.startsWith("data:") ||
+    url.startsWith("blob:") ||
+    (typeof window !== "undefined" && url.startsWith(window.location.origin))
+  ) {
+    return url;
+  }
+  return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+};
 
 interface Seat {
   id: string;
@@ -53,7 +76,17 @@ interface TicketZoomSliderProps {
   seatLabelFormat: SeatLabelFormat;
 }
 
-function TicketSponsorRibbon({ sponsors, isZoomed = false }: { sponsors: Sponsor[]; isZoomed?: boolean }) {
+function TicketSponsorRibbon({
+  sponsors,
+  isZoomed = false,
+  isDownloading = false,
+}: {
+  sponsors: Sponsor[];
+  isZoomed?: boolean;
+  isDownloading?: boolean;
+}) {
+  const [failedLogos, setFailedLogos] = useState<Record<string, boolean>>({});
+
   if (!sponsors || sponsors.length === 0) return null;
 
   const sortedSponsors = [...sponsors].sort((a, b) => {
@@ -86,30 +119,29 @@ function TicketSponsorRibbon({ sponsors, isZoomed = false }: { sponsors: Sponsor
           else if (sponsor.tier === "SILVER") tierBorder = "border-slate-400/20";
           else if (sponsor.tier === "BRONZE") tierBorder = "border-orange-700/20";
 
+          const isLogoFailed = failedLogos[sponsor.id];
+
           return (
             <div
               key={sponsor.id}
               className="relative flex items-center justify-center transition-all duration-300 hover:scale-105 shrink-0"
               title={`${sponsor.name} (${sponsor.tier})`}
             >
-              {sponsor.logoUrl ? (
+              {sponsor.logoUrl && !isLogoFailed ? (
                 <img
-                  src={sponsor.logoUrl}
+                  crossOrigin={getCrossOrigin(sponsor.logoUrl)}
+                  src={getProxiedUrl(sponsor.logoUrl)}
                   alt={sponsor.name}
                   className={`${sizeClasses} object-contain filter brightness-90 contrast-[1.05] hover:brightness-100 transition-all duration-300`}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                    const parent = (e.target as HTMLElement).parentElement;
-                    if (parent) {
-                      const fallback = parent.querySelector('.fallback-badge');
-                      if (fallback) fallback.classList.remove('hidden');
-                    }
+                  onError={() => {
+                    if (isDownloading) return;
+                    setFailedLogos((prev) => ({ ...prev, [sponsor.id]: true }));
                   }}
                 />
               ) : null}
 
               <div
-                className={`fallback-badge ${sponsor.logoUrl ? 'hidden' : ''} bg-gray-900/60 backdrop-blur-md border ${tierBorder} px-2 py-1 rounded-md text-center max-w-[100px] truncate`}
+                className={`fallback-badge ${sponsor.logoUrl && !isLogoFailed ? 'hidden' : ''} bg-gray-900/60 backdrop-blur-md border ${tierBorder} px-2 py-1 rounded-md text-center max-w-[100px] truncate`}
               >
                 <span className="text-[8px] md:text-[9px] font-black text-gray-300 tracking-wide uppercase select-none">
                   {sponsor.name}
@@ -133,6 +165,138 @@ export default function TicketZoomSlider({
     formatSeatLabelForDisplay(label, seatLabelFormat);
   const [activeZoomIndex, setActiveZoomIndex] = useState<number | null>(null);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const ticketCardRef = useRef<HTMLDivElement>(null);
+  const [qrCodes, setQrCodes] = useState<Record<string, string>>({});
+  const [eventImageFailed, setEventImageFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const generateQRs = async () => {
+      const urls: Record<string, string> = {};
+      for (const seat of reservation.seats) {
+        const qrData = `${reservation.id}_${seat.id}`;
+        try {
+          const dataUrl = await QRCode.toDataURL(qrData, {
+            margin: 1,
+            width: 300,
+            color: {
+              dark: "#047857", // emerald green color
+              light: "#ffffff",
+            },
+          });
+          if (active) {
+            urls[seat.id] = dataUrl;
+          }
+        } catch (err) {
+          console.error("Failed to generate local QR code:", err);
+        }
+      }
+      if (active) {
+        setQrCodes(urls);
+      }
+    };
+
+    generateQRs();
+    return () => {
+      active = false;
+    };
+  }, [reservation.id, reservation.seats]);
+
+  const handleDownload = async () => {
+    if (activeZoomIndex === null || !ticketCardRef.current || isDownloading) return;
+
+    setIsDownloading(true);
+
+    // Theme safety capture: force dark mode attributes during download
+    const docEl = document.documentElement;
+    const bodyEl = document.body;
+
+    const hadLightClassDoc = docEl.classList.contains("light");
+    const hadLightClassBody = bodyEl.classList.contains("light");
+    const originalDataTheme = docEl.getAttribute("data-theme");
+
+    if (hadLightClassDoc) docEl.classList.remove("light");
+    if (hadLightClassBody) bodyEl.classList.remove("light");
+    docEl.setAttribute("data-theme", "dark");
+    bodyEl.setAttribute("data-theme", "dark");
+
+    // Dynamic heights safety capture: force full content height of the scroll container
+    const cardEl = ticketCardRef.current;
+    const scrollEl = cardEl?.querySelector(".custom-scrollbar") as HTMLElement | null;
+
+    let originalCardStyle = "";
+    let originalScrollStyle = "";
+
+    if (cardEl) {
+      originalCardStyle = cardEl.style.cssText;
+      cardEl.style.height = "auto";
+      cardEl.style.maxHeight = "none";
+      cardEl.style.overflow = "visible";
+    }
+
+    if (scrollEl) {
+      originalScrollStyle = scrollEl.style.cssText;
+      scrollEl.style.height = "auto";
+      scrollEl.style.maxHeight = "none";
+      scrollEl.style.overflow = "visible";
+    }
+
+    try {
+      // Small frame delay to ensure clear execution context
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(ticketCardRef.current, {
+        pixelRatio: 3, // Ultra-high resolution output
+        backgroundColor: "#111827", // match Slate-900 background to prevent black visual artifacts
+        cacheBust: true,
+        fontEmbedCSS: "", // bypass font embedding network fetches to prevent CORS font preflight failures
+        styleSheetsFilter: (sheet: any) => {
+          try {
+            // Check if sheet has accessible rules to prevent cross-origin stylesheet SecurityError
+            const rules = sheet.cssRules;
+            return true;
+          } catch (e) {
+            return false;
+          }
+        },
+        style: {
+          transform: "scale(1)",
+        },
+      } as any);
+
+      const link = document.createElement("a");
+      const eventTitle = reservation.event.title.replace(/[^a-zA-Z0-9]/g, "_");
+      const seatLabel = formatSeat(reservation.seats[activeZoomIndex].label).replace(/[^a-zA-Z0-9]/g, "_");
+      link.download = `Ticket_${eventTitle}_${seatLabel}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error: any) {
+      console.error("Failed to export ticket as PNG:", error, error?.message, error?.stack);
+      alert(`Download Failed: ${error?.message || "Please make sure your browser allows page canvas export or try the print option."}`);
+    } finally {
+      // Restore styles
+      if (cardEl) {
+        cardEl.style.cssText = originalCardStyle;
+      }
+      if (scrollEl) {
+        scrollEl.style.cssText = originalScrollStyle;
+      }
+
+      // Restore theme state
+      if (hadLightClassDoc) docEl.classList.add("light");
+      if (hadLightClassBody) bodyEl.classList.add("light");
+      if (originalDataTheme) {
+        docEl.setAttribute("data-theme", originalDataTheme);
+      } else {
+        docEl.removeAttribute("data-theme");
+      }
+      bodyEl.removeAttribute("data-theme");
+
+      setIsDownloading(false);
+    }
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.targetTouches[0].clientX);
@@ -209,9 +373,7 @@ export default function TicketZoomSlider({
     <>
       <div className="grid grid-cols-1 gap-6">
         {reservation.seats.map((seat, index) => {
-          const qrData = `${reservation.id}_${seat.id}`;
-          // dynamic emerald-colored high contrast QR code
-          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}&color=047857`;
+          const localQrUrl = qrCodes[seat.id] || "";
 
           return (
             <div
@@ -309,7 +471,7 @@ export default function TicketZoomSlider({
 
                     {/* Event Sponsors Row */}
                     {reservation.event.sponsors && reservation.event.sponsors.length > 0 && (
-                      <TicketSponsorRibbon sponsors={reservation.event.sponsors} />
+                      <TicketSponsorRibbon sponsors={reservation.event.sponsors} isDownloading={isDownloading} />
                     )}
                   </div>
 
@@ -349,7 +511,7 @@ export default function TicketZoomSlider({
                     : "bg-white border-gray-700"
                 }`}>
                   <img
-                    src={qrUrl}
+                    src={localQrUrl}
                     alt="Check-in QR Code"
                     className={`w-20 h-20 object-contain animate-fade-in transition-all duration-300 ${
                       seat.isCheckedIn ? "opacity-35 filter grayscale-[40%]" : ""
@@ -388,14 +550,39 @@ export default function TicketZoomSlider({
                 <p className="hidden text-[10px] text-gray-400 sm:block">{t.scanAtEntryPoint}</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-gray-400 hover:text-white p-2 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 rounded-full transition-all cursor-pointer shadow-lg"
-              aria-label="Close ticket"
-            >
-              <XMarkIcon className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-800 text-white disabled:text-gray-500 border border-emerald-500/30 disabled:border-gray-700 transition-all cursor-pointer shadow-lg active:scale-95"
+              >
+                {isDownloading ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {t.downloading}
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    {t.downloadTicket}
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="text-gray-400 hover:text-white p-2 bg-gray-800/80 hover:bg-gray-700 border border-gray-700 rounded-full transition-all cursor-pointer shadow-lg"
+                aria-label="Close ticket"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Modal Main Slider Area */}
@@ -411,17 +598,23 @@ export default function TicketZoomSlider({
 
             {/* Ticket Zoomed Content Card */}
             <div 
+              ref={ticketCardRef}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               className="relative flex max-h-full w-full max-w-sm touch-pan-y flex-col overflow-hidden rounded-3xl border border-gray-880 bg-gray-900 shadow-2xl"
             >
               {/* Event Header Card Image/Gradient Banner */}
-              {reservation.event.imageUrl ? (
+              {reservation.event.imageUrl && !eventImageFailed ? (
                 <div className="relative h-24 w-full shrink-0 bg-gray-950 sm:h-32">
                   <img
-                    src={reservation.event.imageUrl}
+                    crossOrigin={getCrossOrigin(reservation.event.imageUrl)}
+                    src={getProxiedUrl(reservation.event.imageUrl)}
                     alt={reservation.event.title}
                     className="w-full h-full object-cover opacity-70"
+                    onError={() => {
+                      if (isDownloading) return;
+                      setEventImageFailed(true);
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
                   <div className="absolute bottom-3 left-4 flex items-center gap-2 sm:bottom-4 sm:left-5">
@@ -479,9 +672,7 @@ export default function TicketZoomSlider({
                       : "border-emerald-500/20"
                   }`}>
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                        `${reservation.id}_${reservation.seats[activeZoomIndex].id}`
-                      )}&color=047857`}
+                      src={qrCodes[reservation.seats[activeZoomIndex].id] || ""}
                       alt="Check-in QR Code Large"
                       className={`h-36 w-36 object-contain sm:h-44 sm:w-44 transition-all duration-300 ${
                         reservation.seats[activeZoomIndex].isCheckedIn ? "opacity-25 filter grayscale-[30%]" : ""
@@ -540,7 +731,7 @@ export default function TicketZoomSlider({
 
                 {/* Event Sponsors Row (Zoomed Ticket) */}
                 {reservation.event.sponsors && reservation.event.sponsors.length > 0 && (
-                  <TicketSponsorRibbon sponsors={reservation.event.sponsors} isZoomed={true} />
+                  <TicketSponsorRibbon sponsors={reservation.event.sponsors} isZoomed={true} isDownloading={isDownloading} />
                 )}
               </div>
 
